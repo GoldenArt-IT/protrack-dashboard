@@ -101,6 +101,12 @@ def main():
             # Calculate total working duration and minutes
             total_working_duration, duration_in_minutes = calculate_working_hours_with_minutes(start_time_sewing, end_time_sewing)
 
+            # Calculate Bom time
+            df_bom_sewing = df_bom[selected_row_df['MODEL'][0]==df_bom['CONFIRM MODEL NAME']]
+            df_total_sum_time_sewing = df_bom_sewing['SEW TIME A'].fillna(0) + df_bom_sewing['SEW TIME B'].fillna(0) + df_bom_sewing['SEW TIME C'].fillna(0) + df_bom_sewing['SEW TIME D'].fillna(0)
+          #   st.write(df_bom_sewing)
+          #   st.write(df_total_sum_time_sewing)
+            
             # Condense the information into a single row
             df_sewing_single_row_with_minutes = pd.DataFrame({
                 'DEPARTMENT': 'SEWING',
@@ -111,7 +117,9 @@ def main():
                 'WORK STATUS': [df_sewing_filtered['WORK STATUS'].iloc[-1]],
                 'ASSIGNED': [df_sewing_filtered['ASSIGN'].iloc[-1]],
                 'DURATION': [total_working_duration],
-                'DURATION (MINUTES)': [duration_in_minutes]
+                'DURATION (MINUTES)': [duration_in_minutes],
+                'BOM TIME': [df_total_sum_time_sewing],
+                'DIFF': [duration_in_minutes - df_total_sum_time_sewing]
             })
 
             # Custom function to convert timedelta into a more readable format
@@ -125,11 +133,7 @@ def main():
 
             st.dataframe(df_sewing_single_row_with_minutes)
 
-            # Calculate Bom time
-            df_bom_sewing = df_bom[selected_row_df['MODEL'][0]==df_bom['CONFIRM MODEL NAME']]
-            df_total_sum_time_sewing = df_bom_sewing['SEW TIME A'].fillna(0) + df_bom_sewing['SEW TIME B'].fillna(0) + df_bom_sewing['SEW TIME C'].fillna(0) + df_bom_sewing['SEW TIME D'].fillna(0)
-            st.write(df_bom_sewing)
-            st.write(df_total_sum_time_sewing)
+            
 
     else:
         st.write("No row selected yet.")
