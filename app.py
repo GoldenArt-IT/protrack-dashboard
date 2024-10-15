@@ -54,6 +54,7 @@ def main():
                st.write(f"CUSTOMER : {selected_row['CUSTOMERS'][0]}")
                st.write(f"MODEL : {selected_row['MODEL'][0]}")
                st.write(f"QTY : {selected_row['QTY'][0]}")
+               st.write("STATUS : ")
                st.dataframe(selected_row_subset)
 
 
