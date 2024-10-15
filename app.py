@@ -62,6 +62,38 @@ def main():
                df_sewing = df_sewing[df_sewing['PI NUMBER'] == selected_row['PI NUMBER'][0]]
                st.dataframe(df_sewing)
 
+               # Convert the 'TIMESTAMP' column to datetime
+               df_sewing['TIMESTAMP'] = pd.to_datetime(df_sewing['TIMESTAMP'])
+
+               # Extract start time (first row) and end time (last row)
+               start_time_sewing = df_sewing['TIMESTAMP'].iloc[0]
+               end_time_sewing = df_sewing['TIMESTAMP'].iloc[-1]
+
+               # Condense the information into a single row without the 'INVENTORY STATUS'
+               df_sewing_single_row = pd.DataFrame({
+               'PI NUMBER': [df_sewing['PI NUMBER'].iloc[0]],  # Assume PI Number is the same across rows
+               'START TIME': [start_time_sewing],
+               'END TIME': [end_time_sewing],
+               'WORK STATUS': [df_sewing['WORK STATUS'].iloc[-1]],  # Status at the last row
+               'ASSIGNED': [df_sewing['ASSIGN'].iloc[-1]] # Assigned person at the last row
+               })
+
+               # Custom function to convert timedelta into a more readable format
+               def format_timedelta(td):
+                    days = td.days
+                    hours, remainder = divmod(td.seconds, 3600)
+                    minutes, seconds = divmod(remainder, 60)
+                    return f"{days} day{'s' if days != 1 else ''}, {hours} hour{'s' if hours != 1 else ''}, {minutes} minute{'s' if minutes != 1 else ''}, and {seconds} second{'s' if seconds != 1 else ''}"
+               
+
+               # # Apply the formatting function to the duration column
+               
+               df_sewing_single_row['DURATION'] = df_sewing_single_row['END TIME'] - df_sewing_single_row['START TIME']
+               # st.write(df_sewing_single_row['DURATION'].apply(format_timedelta))
+               df_sewing_single_row['DURATION'] = df_sewing_single_row['DURATION'].apply(format_timedelta)
+
+               st.dataframe(df_sewing_single_row)
+
 
      else:
           st.write("No row selected yet.")
