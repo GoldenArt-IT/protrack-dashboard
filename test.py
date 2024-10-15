@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 # Sample DataFrame
 data = {
@@ -7,25 +8,24 @@ data = {
     'Name': ['John', 'Jane', 'Doe'],
     'Age': [28, 34, 23]
 }
-
 df = pd.DataFrame(data)
 
-# Function to display details of selected row
-def display_details(selected_row):
-    st.write(f"Details for selected row:")
-    st.write(selected_row)
+# Set up AgGrid with row selection
+gb = GridOptionsBuilder.from_dataframe(df)
+gb.configure_selection(selection_mode="single", use_checkbox=True)
+grid_options = gb.build()
 
-# Streamlit App Simulation
-def streamlit_app_simulation():
-    # Display the dataframe and buttons
-    st.write("Click on a row to see details:")
-    
-    # Iterate over DataFrame and create a button for each row
-    for index, row in df.iterrows():
-        # Create a button for each row
-        if st.button(f"Select Row {index + 1}"):
-            # When a row is clicked, show the details
-            display_details(row)
+# Display the DataFrame
+st.write("Click on a row to see details:")
+grid_response = AgGrid(
+    df,
+    gridOptions=grid_options,
+    enable_enterprise_modules=False,
+    update_mode='MODEL_CHANGED',
+)
 
-# Simulate the streamlit app
-streamlit_app_simulation()
+# Display details of the selected row
+selected_rows = grid_response['selected_rows']
+if selected_rows:
+    st.write("Details for the selected row:")
+    st.write(selected_rows[0])
