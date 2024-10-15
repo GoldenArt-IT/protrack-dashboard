@@ -3,65 +3,68 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 def main():
 
-        # Set page to always wide
-        st.set_page_config(layout="wide")
+     # Set page to always wide
+     st.set_page_config(layout="wide")
 
-        st.title("Stock Value Comparer")
+     st.title("PRODUCTION DASHBOARD")
+     
+     # st.write("Production Progress")
+     conn1 = st.connection("gsheets", type=GSheetsConnection)
+     df = conn1.read(worksheet="PRODUCTION PROGRESS", ttl=5)
+     # df = df.dropna(how="all", axis=1)
+     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+     df = df.dropna(how="all", axis=0)
+     # st.dataframe(df)
 
-        conn = st.connection("gsheets", type=GSheetsConnection)
-        df = conn.read(worksheet="DATA", ttl=5)
-        df = df.dropna(how="all")
-        df = df.query("~DEPARMENT.isnull()")
-        df = df[~df['ITEM DETAILS'].str.contains(r"- FOR \*", na=False)]
-        df = df.query("~`ITEM DETAILS`.isnull()")
-        columns = ['DEPARMENT', 'ITEM DETAILS', 'ITEM CODE', 'CURRENT STOCK']
-        df = pd.DataFrame(df, columns=columns)
-        df = df.rename(columns={"CURRENT STOCK":"CURRENT STOCK IN GA STORE"})
-        df = df.rename(columns={"DEPARMENT":"DEPARTMENT"})
+     # st.write("Sewing Production Progress")
+     conn2 = st.connection("gsheets", type=GSheetsConnection)
+     df_sewing = conn2.read(worksheet="SEWING LOGS", ttl=5)
+     # df = df.dropna(how="all", axis=1)
+     df_sewing = df_sewing.loc[:, ~df_sewing.columns.str.contains('^Unnamed')]
+     df_sewing = df_sewing.dropna(how="all", axis=0)
+     # st.dataframe(df_sewing)
 
-        # st.dataframe(df)
+     # Set up AgGrid options to make rows clickable
+     gb = GridOptionsBuilder.from_dataframe(df)
+     gb.configure_selection('single')  # Allow single row selection
 
-        uploaded_file = st.sidebar.file_uploader("Please upload file", type=["csv", "xlsx"])
-        if uploaded_file is not None:
-            if uploaded_file.name.endswith('.csv'):
-                df_uploaded = pd.read_csv(uploaded_file)
-            elif uploaded_file.name.endswith('.xlsx'):
-                df_uploaded = pd.read_excel(uploaded_file)
-            
-            df_uploaded = pd.DataFrame(df_uploaded, columns=['Item Code', 'UOM', 'Item Group', 'Item Type', 'Description', 'Qty'])
-            df_uploaded = df_uploaded.rename(columns={ "Qty" : "CURRENT STOCK IN AUTOCOUNT" })
-            df_uploaded = df_uploaded.rename(columns={ "Item Code" : "ITEM CODE" })
-            df_uploaded = df_uploaded.iloc[:-1]
+     grid_options = gb.build()
+
+     # Display the dataframe with AgGrid and assign a unique key
+     grid_response = AgGrid(df, gridOptions=grid_options, height=300, width='100%', key='unique_grid_key')
+
+     # Get the selected row data
+     selected_row = grid_response['selected_rows']
+
+     # First check if selected_row is not None
+     if selected_row is not None and len(selected_row) > 0:
+          st.write("Details of the selected row:")
+          # st.write(selected_row)
+          selected_row_df = pd.DataFrame(selected_row)
+          selected_row_subset = selected_row_df[['IN', 'FR', 'FB', 'WD', 'SP', 'SR', 'SW', 'AS', 'PC']]
+
+          column1, column2 = st.columns(2)
+          
+          with column1:
+               st.write(f"PI NUMBER : {selected_row['PI NUMBER'][0]}")
+               st.write(f"CUSTOMER : {selected_row['CUSTOMERS'][0]}")
+               st.write(f"MODEL : {selected_row['MODEL'][0]}")
+               st.write(f"QTY : {selected_row['QTY'][0]}")
+               st.dataframe(selected_row_subset)
 
 
-            df_merged = pd.merge(df_uploaded, df[['ITEM CODE', 'DEPARTMENT', 'CURRENT STOCK IN GA STORE']], on='ITEM CODE', how='left')
-            df_merged['DIFF'] = df_merged['CURRENT STOCK IN AUTOCOUNT'] - df_merged['CURRENT STOCK IN GA STORE']
-            
-            # st.dataframe(df_uploaded)
+          with column2:
+               df_sewing = df_sewing[df_sewing['PI NUMBER'] == selected_row['PI NUMBER'][0]]
+               st.dataframe(df_sewing)
 
-            total_items, total_items_not_exist, total_balance_items, total_over_items, total_negative_items = st.columns(5)
 
-            with total_items:
-                 st.metric(label="Total Items are Balance", value=len(df_merged))
-            
-            with total_items_not_exist:
-                 st.metric(label="Total Items does not Exist", value=df_merged["CURRENT STOCK IN GA STORE"].isnull().sum())
-
-            with total_balance_items:
-                 st.metric(label="Total Items are Balance", value=len(df_merged.query('DIFF == 0')))
-
-            with total_over_items:
-                 st.metric(label="Total Items are Over (-diff)", value=len(df_merged.query('DIFF < 0')))
-
-            with total_negative_items:
-                 st.metric(label="Total Item are Below (+diff)", value=len(df_merged.query('DIFF > 0')))
-            
-            st.dataframe(df_merged)
-        else:
-              st.warning("Please upload file", icon="⚠")
+     else:
+          st.write("No row selected yet.")
+     
 
 if __name__ == "__main__":
     main()
