@@ -117,9 +117,7 @@ def main():
                 'WORK STATUS': [df_sewing_filtered['WORK STATUS'].iloc[-1]],
                 'ASSIGNED': [df_sewing_filtered['ASSIGN'].iloc[-1]],
                 'DURATION': [total_working_duration],
-                'DURATION (MINUTES)': [duration_in_minutes],
-                'BOM TIME': [df_total_sum_time_sewing],
-                'DIFF': [duration_in_minutes - df_total_sum_time_sewing]
+                'DURATION (MINUTES)': [duration_in_minutes]
             })
 
             # Custom function to convert timedelta into a more readable format
@@ -130,6 +128,12 @@ def main():
                 return f"{days} day{'s' if days != 1 else ''}, {hours} hour{'s' if hours != 1 else ''}, {minutes} minute{'s' if minutes != 1 else ''}, and {seconds} second{'s' if seconds != 1 else ''}"
 
             df_sewing_single_row_with_minutes['DURATION'] = df_sewing_single_row_with_minutes['DURATION'].apply(format_timedelta)
+            df_sewing_single_row_with_minutes['BOM TIME (MINUTES)'] = df_total_sum_time_sewing.iloc[0] * selected_row_df['QTY'].iloc[0]
+            df_sewing_single_row_with_minutes['DIFF (MINUTES)'] = df_sewing_single_row_with_minutes['BOM TIME (MINUTES)'] - df_sewing_single_row_with_minutes['DURATION (MINUTES)']
+
+            df_sewing_single_row_with_minutes = df_sewing_single_row_with_minutes.drop(columns='DURATION')
+
+          #   selected_row_df['QTY'][0].dtype
 
             st.dataframe(df_sewing_single_row_with_minutes)
 
