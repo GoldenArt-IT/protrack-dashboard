@@ -8,24 +8,22 @@ data = {
     'Name': ['John', 'Jane', 'Doe'],
     'Age': [28, 34, 23]
 }
+
 df = pd.DataFrame(data)
 
-# Set up AgGrid with row selection
+# Set up AgGrid options to make rows clickable
 gb = GridOptionsBuilder.from_dataframe(df)
-gb.configure_selection(selection_mode="single", use_checkbox=True)
+gb.configure_selection('single')  # Allow single row selection
+
 grid_options = gb.build()
 
-# Display the DataFrame
-st.write("Click on a row to see details:")
-grid_response = AgGrid(
-    df,
-    gridOptions=grid_options,
-    enable_enterprise_modules=False,
-    update_mode='MODEL_CHANGED',
-)
+# Display the dataframe with AgGrid and assign a unique key
+grid_response = AgGrid(df, gridOptions=grid_options, height=200, width='100%', key='unique_grid_key')
 
-# Display details of the selected row
-selected_rows = grid_response['selected_rows']
-if selected_rows:
-    st.write("Details for the selected row:")
-    st.write(selected_rows[0])
+# Get the selected row data
+selected_row = grid_response['selected_rows']
+
+# Check if any row is selected by using len() to avoid ambiguity
+if len(selected_row) > 0:
+    st.write("Details of the selected row:")
+    st.write(selected_row)
