@@ -23,7 +23,9 @@ grid_response = AgGrid(df, gridOptions=grid_options, height=200, width='100%', k
 # Get the selected row data
 selected_row = grid_response['selected_rows']
 
-# Check if any row is selected by using len() to avoid ambiguity
-if len(selected_row) > 0:
+# First check if selected_row is not None
+if selected_row is not None and len(selected_row) > 0:
     st.write("Details of the selected row:")
     st.write(selected_row)
+else:
+    st.write("No row selected yet.")
