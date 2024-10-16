@@ -113,6 +113,27 @@ def main():
     df_combine_bom[f'TOTAL BOM TIME {selected_department} x QTY'] = df_combine_bom['QTY'] * df_combine_bom['TOTAL BOM TIME']
 
     df_combine_bom = df_combine_bom.drop(columns=['TOTAL BOM TIME'])
+
+    # Add assigned staff
+    st.write("Assign staff to each row:")
+    assigned_staff = []
+    for i, row in df_combine_bom.iterrows():
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.write(row['PI NUMBER'])
+        with col2:
+            st.write(row['MODEL'])
+        with col3:
+            st.write(row['QTY'])
+        with col4:
+            staff = st.multiselect(f"Assign staff for {row['PI NUMBER']}", df_staff['STAFF NAME'].unique(), key=f"staff_{i}")
+            assigned_staff.append(staff)
+        with col5:
+            st.write(f"{row[f'TOTAL BOM TIME {selected_department} x QTY']}")
+
+    # Add the selected staff to the DataFrame
+    df_combine_bom['ASSIGNED STAFF'] = assigned_staff
+
     st.dataframe(df_combine_bom)
 
 if __name__ == "__main__":
