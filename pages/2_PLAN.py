@@ -114,6 +114,9 @@ def main():
 
     df_combine_bom = df_combine_bom.drop(columns=['TOTAL BOM TIME'])
 
+    # Filter df_staff based on the selected department
+    df_staff_filtered = df_staff[df_staff['DEPARTMENT'] == selected_department]
+
     # Add assigned staff
     st.write("Assign staff to each row:")
     assigned_staff = []
@@ -126,7 +129,7 @@ def main():
         with col3:
             st.write(row['QTY'])
         with col4:
-            staff = st.multiselect(f"Assign staff for {row['PI NUMBER']}", df_staff['STAFF NAME'].unique(), key=f"staff_{i}")
+            staff = st.multiselect(f"Assign staff for {row['PI NUMBER']}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}")
             assigned_staff.append(staff)
         with col5:
             st.write(f"{row[f'TOTAL BOM TIME {selected_department} x QTY']}")
