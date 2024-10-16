@@ -150,7 +150,11 @@ def main():
 
     # Display the staff assignment summary table
     st.write("Staff Assignment Summary:")
-    st.dataframe(staff_assignment)
+
+    staff_assignment['TOTAL WORKING (HOURS)'] = 8 * 60
+    staff_assignment['REMAINING TIME'] = staff_assignment['TOTAL WORKING (HOURS)'] - staff_assignment[f'TOTAL BOM TIME {selected_department} x QTY']
+
+    st.write(staff_assignment)
 
 if __name__ == "__main__":
     main()
