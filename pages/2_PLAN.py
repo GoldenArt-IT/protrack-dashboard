@@ -132,9 +132,25 @@ def main():
             st.write(f"{row[f'TOTAL BOM TIME {selected_department} x QTY']}")
 
     # Add the selected staff to the DataFrame
-    df_combine_bom['ASSIGNED STAFF'] = assigned_staff
+    df_combine_bom['ASSIGNED'] = assigned_staff
 
+    # Convert the 'ASSIGNED' column to a hashable type (tuple) if it's a list
+    df_combine_bom['ASSIGNED'] = df_combine_bom['ASSIGNED'].apply(lambda x: x if isinstance(x, list) else [x])
+    df_combine_bom = df_combine_bom.explode('ASSIGNED')
+
+    # Display the updated DataFrame with assigned staff
     st.dataframe(df_combine_bom)
+
+    # Group by 'ASSIGNED' to create the Staff Assignment table
+    staff_assignment = df_combine_bom.groupby('ASSIGNED').agg({
+        'PI NUMBER': 'count',
+        'QTY': 'sum',
+        f'TOTAL BOM TIME {selected_department} x QTY' : 'sum'
+    }).reset_index()
+
+    # Display the staff assignment summary table
+    st.write("Staff Assignment Summary:")
+    st.dataframe(staff_assignment)
 
 if __name__ == "__main__":
     main()
