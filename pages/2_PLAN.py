@@ -25,6 +25,7 @@ def main():
     df_bom = conn2.read(worksheet="DATA BOM", ttl=5)
     df_bom = df_bom.loc[:, ~df_bom.columns.str.contains('^Unnamed')]
     df_bom = df_bom.dropna(how="all", axis=0)
+    df_bom = df_bom.rename(columns={'CONFIRM MODEL NAME':'MODEL'})
 
     # Read Staff Data
     conn3 = st.connection("gsheets", type=GSheetsConnection)
@@ -46,6 +47,63 @@ def main():
     with col3:
         unique_pi = df['PI NUMBER'].dropna().unique()
         selected_pi = st.multiselect("Select PI Number", unique_pi)
+
+    # Table Order vs BOM Time
+    if selected_department == 'FRAME':
+        df_bom = df_bom[['MODEL', 'FRAME TIME A', 'FRAME TIME B', 'FRAME TIME C', 'FRAME TIME D']]
+        df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
+        st.dataframe(df_bom)
+
+    if selected_department == 'FABRIC':
+        df_bom = df_bom[['MODEL', 'FAB TIME A', 'FAB TIME B', 'FAB TIME C', 'FAB TIME D']]
+
+        numeric_columns = ['FAB TIME A', 'FAB TIME B', 'FAB TIME C', 'FAB TIME D']
+
+        # Convert columns to numeric, force errors to NaN to handle issues
+        for col in numeric_columns:
+            df_bom[col] = pd.to_numeric(df_bom[col], errors='coerce')  # 'coerce' turns non-numeric into NaN
+
+        df_bom['TOTAL BOM TIME'] = df_bom[['FAB TIME A', 'FAB TIME B', 'FAB TIME C', 'FAB TIME D']].sum(axis=1)
+        st.dataframe(df_bom)
+
+
+    if selected_department == 'SPONGE':
+        df_bom = df_bom[['MODEL', 'SPONGE TIME A', 'SPONGE TIME B', 'SPONGE TIME C', 'SPONGE TIME D']]
+        df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
+        st.dataframe(df_bom)
+    
+    if selected_department == 'SPRAY':
+        df_bom = df_bom[['MODEL', 'SPRAY TIME A', 'SPRAY TIME B', 'SPRAY TIME C', 'SPRAY TIME D']]
+        df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
+        st.dataframe(df_bom)
+
+    if selected_department == 'SEWING':
+        df_bom = df_bom[['MODEL', 'SEW TIME A', 'SEW TIME B', 'SEW TIME C', 'SEW TIME D']]
+        df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
+        st.dataframe(df_bom)
+
+    if selected_department == 'ASSEMBLY':
+        df_bom = df_bom[['MODEL', 'ASSEMBLY TIME A', 'ASSEMBLY TIME B', 'ASSEMBLY TIME C', 'ASSEMBLY TIME D']]
+        df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
+        st.dataframe(df_bom)
+
+    if selected_department == 'PACKING':
+        df_bom = df_bom[['MODEL', 'PACKING TIME A', 'PACKING TIME B', 'PACKING TIME C', 'PACKING TIME D']]
+        df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
+        st.dataframe(df_bom)
+
+    if selected_department == 'INTERIOR':
+        df_bom = df_bom[['MODEL', 'INT/WEL TIME A', 'INT/WEL TIME B', 'INT/WEL TIME C', 'INT/WEL TIME D']]
+        df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
+        st.dataframe(df_bom)
+
+    df_combine_bom = pd.merge(df, df_bom[['MODEL', 'TOTAL BOM TIME']], on='MODEL', how='left')
+    df_combine_bom[f'TOTAL BOM TIME {selected_department} PER MODEL'] = df_combine_bom['TOTAL BOM TIME']
+    df_combine_bom[f'TOTAL BOM TIME {selected_department} x QTY'] = df_combine_bom['QTY'] * df_combine_bom['TOTAL BOM TIME']
+
+    df_combine_bom = df_combine_bom.drop(columns=['TOTAL BOM TIME'])
+
+    st.dataframe(df_combine_bom)
 
 
 if __name__ == "__main__":
