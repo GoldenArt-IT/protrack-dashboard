@@ -13,19 +13,19 @@ def main():
 
     # Read the Production Progress
     conn1 = st.connection("gsheets", type=GSheetsConnection)
-    df = conn1.read(worksheet="PRODUCTION PROGRESS", ttl=5)
+    df = conn1.read(worksheet="PRODUCTION PROGRESS", ttl=300)
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     df = df.dropna(how="all", axis=0)
 
     # Read the Sewing Logs
     conn2 = st.connection("gsheets", type=GSheetsConnection)
-    df_sewing = conn2.read(worksheet="SEWING LOGS", ttl=5)
+    df_sewing = conn2.read(worksheet="SEWING LOGS", ttl=300)
     df_sewing = df_sewing.loc[:, ~df_sewing.columns.str.contains('^Unnamed')]
     df_sewing = df_sewing.dropna(how="all", axis=0)
 
     # Read the Data BOM
     conn3 = st.connection("gsheets", type=GSheetsConnection)
-    df_bom = conn3.read(worksheet="DATA BOM", ttl=5)
+    df_bom = conn3.read(worksheet="DATA BOM", ttl=300)
     df_bom = df_bom.loc[:, ~df_bom.columns.str.contains('^Unnamed')]
     df_bom = df_bom.dropna(how="all", axis=0)
 
