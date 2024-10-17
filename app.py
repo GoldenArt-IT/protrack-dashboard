@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import matplotlib.pyplot as plt
-from st_aggrid import AgGrid, GridOptionsBuilder
+from st_aggrid import AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
 from datetime import timedelta, datetime, time as dtime
 
 def main():
@@ -36,7 +36,7 @@ def main():
     grid_options = gb.build()
 
     # Display the dataframe with AgGrid
-    grid_response = AgGrid(df, gridOptions=grid_options, height=300, width='100%', key='unique_grid_key')
+    grid_response = AgGrid(df, gridOptions=grid_options, height=300, width='100%', key='unique_grid_key', columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS)
 
     # Get the selected row data
     selected_row = grid_response['selected_rows']
