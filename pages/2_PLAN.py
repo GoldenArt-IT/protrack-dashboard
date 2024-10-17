@@ -139,13 +139,28 @@ def main():
 
     # Convert the 'ASSIGNED' column to a hashable type (tuple) if it's a list
     df_combine_bom['ASSIGNED'] = df_combine_bom['ASSIGNED'].apply(lambda x: x if isinstance(x, list) else [x])
-    df_combine_bom = df_combine_bom.explode('ASSIGNED')
+
+    # Apply CSS to wrap text in columns
+    st.markdown(
+        """
+        <style>
+        .dataframe td {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        </style>
+        """, unsafe_allow_html=True
+    )
 
     # Display the updated DataFrame with assigned staff
     st.dataframe(df_combine_bom)
 
+    # Converts each element of the specified column(s) into a row 
+    # example : [PI-2024, [TEAK, WHITE]] = [[PI-2024, TEAK], [PI-2024, WHITE]]
+    df_combine_bom_EXPLODE = df_combine_bom.explode('ASSIGNED')
+
     # Group by 'ASSIGNED' to create the Staff Assignment table
-    staff_assignment = df_combine_bom.groupby('ASSIGNED').agg({
+    staff_assignment = df_combine_bom_EXPLODE.groupby('ASSIGNED').agg({
         'PI NUMBER': 'count',
         'QTY': 'sum',
         f'TOTAL BOM TIME {selected_department} x QTY' : 'sum'
