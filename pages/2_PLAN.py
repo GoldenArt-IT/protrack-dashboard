@@ -46,7 +46,7 @@ def main():
     with col2:
         unique_decoy_date = df['DECOY DATE'].dropna().unique()
         decoy_date_options = ['All'] + list(unique_decoy_date)  # Add 'All' as the default option
-        selected_date = st.selectbox("Choose Plan Date", decoy_date_options, index=0, key="selected_date")  # Use session state
+        selected_date = st.selectbox("Choose Plan Date", decoy_date_options, index=1, key="selected_date")  # Use session state
 
     # Filter df based on selected Plan Date, show all if 'All' is selected
     if st.session_state.selected_date != 'All':
@@ -116,23 +116,24 @@ def main():
 
     # Filter df_staff based on the selected department
     df_staff_filtered = df_staff[df_staff['DEPARTMENT'] == selected_department]
-
-    # Add assigned staff
-    st.write("Assign staff to each row:")
-    assigned_staff = []
-    for i, row in df_combine_bom.iterrows():
-        col1, col2, col3, col4, col5 = st.columns(5)
-        with col1:
-            st.write(row['PI NUMBER'])
-        with col2:
-            st.write(row['MODEL'])
-        with col3:
-            st.write(row['QTY'])
-        with col4:
-            staff = st.multiselect(f"Assign staff for {row['PI NUMBER']}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}")
-            assigned_staff.append(staff)
-        with col5:
-            st.write(f"{row[f'TOTAL BOM TIME {selected_department} x QTY']}")
+    
+    if selected_date != "All":
+        # Add assigned staff
+        st.write("Assign staff to each row:")
+        assigned_staff = []
+        for i, row in df_combine_bom.iterrows():
+            col1, col2, col3, col4, col5 = st.columns(5)
+            with col1:
+                st.write(row['PI NUMBER'])
+            with col2:
+                st.write(row['MODEL'])
+            with col3:
+                st.write(row['QTY'])
+            with col4:
+                staff = st.multiselect(f"Assign staff for {row['PI NUMBER']}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}")
+                assigned_staff.append(staff)
+            with col5:
+                st.write(f"{row[f'TOTAL BOM TIME {selected_department} x QTY']}")
 
     # Add the selected staff to the DataFrame
     df_combine_bom['ASSIGNED'] = assigned_staff
