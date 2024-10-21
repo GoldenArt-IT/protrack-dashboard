@@ -24,6 +24,7 @@ def main():
     df_bom = df_bom.loc[:, ~df_bom.columns.str.contains('^Unnamed')]
     df_bom = df_bom.dropna(how="all", axis=0)
     df_bom = df_bom.rename(columns={'CONFIRM MODEL NAME': 'MODEL'})
+    st.dataframe(df_bom)
 
     # Read Staff Data
     conn3 = st.connection("gsheets", type=GSheetsConnection)
@@ -65,7 +66,7 @@ def main():
 
     # Table Order vs BOM Time logic based on department selection
     if selected_department == 'FRAME':
-        df_bom = df_bom[['MODEL', 'FRAME TIME A', 'FRAME TIME B', 'FRAME TIME C', 'FRAME TIME D']]
+        df_bom = df_bom[['MODEL', 'PART FRAME A', 'PART FRAME B', 'PART FRAME C', 'PART FRAME D', 'FRAME TIME A', 'FRAME TIME B', 'FRAME TIME C', 'FRAME TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
         st.dataframe(df_bom)
     
@@ -108,21 +109,28 @@ def main():
         st.dataframe(df_bom)
 
     # Combine filtered production progress data with BOM data
-    df_combine_bom = pd.merge(df_filtered_by_date, df_bom[['MODEL', 'TOTAL BOM TIME']], on='MODEL', how='left')
+    df_combine_bom = pd.merge(df_filtered_by_date, df_bom, on='MODEL', how='left')
     df_combine_bom[f'TOTAL BOM TIME {selected_department} PER MODEL'] = df_combine_bom['TOTAL BOM TIME']
     df_combine_bom[f'TOTAL BOM TIME {selected_department} x QTY'] = df_combine_bom['QTY'] * df_combine_bom['TOTAL BOM TIME']
 
     df_combine_bom = df_combine_bom.drop(columns=['TOTAL BOM TIME'])
+    st.header('df combine bom')
+    st.dataframe(df_combine_bom)
 
     # Filter df_staff based on the selected department
     df_staff_filtered = df_staff[df_staff['DEPARTMENT'] == selected_department]
     
     if selected_date != "All":
         # Add assigned staff
-        st.write("Assign staff to each row:")
-        assigned_staff = []
+        st.header("Assign staff to each row:")
+        assigned_staff_a = []
+        assigned_staff_b = []
+        assigned_staff_c = []
+        assigned_staff_d = []
+        assigned_staff_all = []
+        assigned_qc = []
         for i, row in df_combine_bom.iterrows():
-            col1, col2, col3, col4, col5 = st.columns(5)
+            col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns(9)
             with col1:
                 st.write(row['PI NUMBER'])
             with col2:
@@ -130,13 +138,35 @@ def main():
             with col3:
                 st.write(row['QTY'])
             with col4:
-                staff = st.multiselect(f"Assign staff for {row['PI NUMBER']}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}")
-                assigned_staff.append(staff)
+                staff_a = st.multiselect(f"{row.iloc[8]} - {row.iloc[12]}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}_a")
+                assigned_staff_a.append(staff_a)
             with col5:
-                st.write(f"{row[f'TOTAL BOM TIME {selected_department} x QTY']}")
+                staff_b = st.multiselect(f"{row.iloc[9]} - {row.iloc[13]}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}_b")
+                assigned_staff_b.append(staff_b)
+            with col6:
+                staff_c = st.multiselect(f"{row.iloc[10]} - {row.iloc[14]}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}_c")
+                assigned_staff_c.append(staff_c)
+            with col7:
+                staff_d = st.multiselect(f"{row.iloc[10]} - {row.iloc[14]}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}_d")
+                assigned_staff_d.append(staff_d)
+            with col8:
+                staff_all = st.multiselect(f"ALL PART - {row.iloc[-1]}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}")
+                assigned_staff_all.append(staff_all)
+            with col9:
+                qc = st.checkbox(f"QC - {row.iloc[0]}", key=f"qc_{i}")
+                assigned_qc.append(qc)
+
 
     # Add the selected staff to the DataFrame
-    df_combine_bom['ASSIGNED'] = assigned_staff
+    df_combine_bom['ASSIGNED PART A'] = assigned_staff_a
+    df_combine_bom['ASSIGNED PART B'] = assigned_staff_b
+    df_combine_bom['ASSIGNED PART C'] = assigned_staff_c
+    df_combine_bom['ASSIGNED PART D'] = assigned_staff_d
+    df_combine_bom['ASSIGNED'] = assigned_staff_all
+    df_combine_bom['QC'] = assigned_qc
+
+    # Display the updated DataFrame with assigned staff
+    st.dataframe(df_combine_bom)
 
     # Convert the 'ASSIGNED' column to a hashable type (tuple) if it's a list
     df_combine_bom['ASSIGNED'] = df_combine_bom['ASSIGNED'].apply(lambda x: x if isinstance(x, list) else [x])
@@ -152,9 +182,6 @@ def main():
         </style>
         """, unsafe_allow_html=True
     )
-
-    # Display the updated DataFrame with assigned staff
-    st.dataframe(df_combine_bom)
 
     # Converts each element of the specified column(s) into a row 
     # example : [PI-2024, [TEAK, WHITE]] = [[PI-2024, TEAK], [PI-2024, WHITE]]
