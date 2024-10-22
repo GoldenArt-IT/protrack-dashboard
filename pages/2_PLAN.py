@@ -20,16 +20,27 @@ def main():
 
     # Read the Data BOM
     conn2 = st.connection("gsheets", type=GSheetsConnection)
-    df_bom = conn2.read(worksheet="DATA BOM", ttl=300)
+    df_bom = conn2.read(worksheet="DATA BOM", ttl=5000)
     df_bom = df_bom.loc[:, ~df_bom.columns.str.contains('^Unnamed')]
     df_bom = df_bom.dropna(how="all", axis=0)
     df_bom = df_bom.rename(columns={'CONFIRM MODEL NAME': 'MODEL'})
-    st.dataframe(df_bom)
+    # st.dataframe(df_bom)
 
     # Read Staff Data
     conn3 = st.connection("gsheets", type=GSheetsConnection)
     df_staff = conn3.read(worksheet="STAFF DATA", ttl=300)
     df_staff = df_staff.dropna(how="all", axis=0)
+
+    # Function to handle DataFrame display logic
+    def toggle_dataframe(df, button_name):
+        if 'show_df' not in st.session_state:
+            st.session_state['show_df'] = False
+
+        if st.button(button_name):
+            st.session_state['show_df'] = not st.session_state['show_df']  # Toggle visibility
+
+        if st.session_state['show_df']:
+            st.dataframe(df)
 
     # Initialize session state to manage selections
     if 'selected_date' not in st.session_state:
@@ -68,37 +79,30 @@ def main():
     if selected_department == 'FRAME':
         df_bom = df_bom[['MODEL', 'PART FRAME A', 'PART FRAME B', 'PART FRAME C', 'PART FRAME D', 'FRAME TIME A', 'FRAME TIME B', 'FRAME TIME C', 'FRAME TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
-        st.dataframe(df_bom)
     
     if selected_department == 'SPONGE':
         df_bom = df_bom[['MODEL', 'PART SPONGE A', 'PART SPONGE B', 'PART SPONGE C', 'PART SPONGE D', 'SPONGE TIME A', 'SPONGE TIME B', 'SPONGE TIME C', 'SPONGE TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
-        st.dataframe(df_bom)
     
     if selected_department == 'SPRAY':
         df_bom = df_bom[['MODEL', 'PART SPRAY A', 'PART SPRAY B', 'PART SPRAY C', 'PART SPRAY D', 'SPRAY TIME A', 'SPRAY TIME A.1', 'SPRAY TIME A.2', 'SPRAY TIME A.3']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
-        st.dataframe(df_bom)
 
     if selected_department == 'SEWING':
         df_bom = df_bom[['MODEL', 'PART SEW A', 'PART SEW B', 'PART SEW C', 'PART SEW D',  'SEW TIME A', 'SEW TIME B', 'SEW TIME C', 'SEW TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
-        st.dataframe(df_bom)
 
     if selected_department == 'ASSEMBLY':
         df_bom = df_bom[['MODEL', 'PART ASSEMBLY A', 'PART ASSEMBLY B', 'PART ASSEMBLY C', 'PART ASSEMBLY D', 'ASSEMBLY TIME A', 'ASSEMBLY TIME B', 'ASSEMBLY TIME C', 'ASSEMBLY TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
-        st.dataframe(df_bom)
 
     if selected_department == 'PACKING':
         df_bom = df_bom[['MODEL', 'PART PACKING A', 'PART PACKING B', 'PART PACKING C', 'PART PACKING D', 'PACKING TIME A', 'PACKING TIME B', 'PACKING TIME C', 'PACKING TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
-        st.dataframe(df_bom)
 
     if selected_department == 'INTERIOR':
         df_bom = df_bom[['MODEL', 'PART INT/WEL A', 'PART INT/WEL B', 'PART INT/WEL C', 'PART INT/WEL D', 'INT/WEL TIME A', 'INT/WEL TIME B', 'INT/WEL TIME C', 'INT/WEL TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
-        st.dataframe(df_bom)
 
     elif selected_department == 'FABRIC':
         df_bom = df_bom[['MODEL', 'PART FAB A', 'PART FAB B', 'PART FAB C', 'PART FAB D', 'FAB TIME A', 'FAB TIME B', 'FAB TIME C', 'FAB TIME D']]
@@ -106,23 +110,29 @@ def main():
         for col in numeric_columns:
             df_bom[col] = pd.to_numeric(df_bom[col], errors='coerce')
         df_bom['TOTAL BOM TIME'] = df_bom[['FAB TIME A', 'FAB TIME B', 'FAB TIME C', 'FAB TIME D']].sum(axis=1)
-        st.dataframe(df_bom)
+
+    # Display BOM data based on department
+    toggle_dataframe(df_bom, 'Show BOM Data')
 
     # Combine filtered production progress data with BOM data
     df_combine_bom = pd.merge(df_filtered_by_date, df_bom, on='MODEL', how='left')
     df_combine_bom[f'TOTAL BOM TIME {selected_department} PER MODEL'] = df_combine_bom['TOTAL BOM TIME']
     df_combine_bom[f'TOTAL BOM TIME {selected_department} x QTY'] = df_combine_bom['QTY'] * df_combine_bom['TOTAL BOM TIME']
 
+    df_combine_bom.iloc[:, -7] = df_combine_bom.iloc[:, -7] * df_combine_bom['QTY']
+    df_combine_bom.iloc[:, -6] = df_combine_bom.iloc[:, -6] * df_combine_bom['QTY']
+    df_combine_bom.iloc[:, -5] = df_combine_bom.iloc[:, -5] * df_combine_bom['QTY']
+    df_combine_bom.iloc[:, -4] = df_combine_bom.iloc[:, -4] * df_combine_bom['QTY']
+
     df_combine_bom = df_combine_bom.drop(columns=['TOTAL BOM TIME'])
-    st.header('df combine bom')
-    st.dataframe(df_combine_bom)
+    toggle_dataframe(df_combine_bom, 'Show BOM time based on Plan')
 
     # Filter df_staff based on the selected department
     df_staff_filtered = df_staff[df_staff['DEPARTMENT'] == selected_department]
     
     if selected_date != "All":
         # Add assigned staff
-        st.header(f"Assign staff - PLAN {selected_date}")
+        st.header(f"Assign staff - PLAN : {selected_date} - DEPARTMENT : {selected_department}")
         assigned_staff_a = []
         assigned_staff_b = []
         assigned_staff_c = []
@@ -147,7 +157,7 @@ def main():
                 staff_c = st.multiselect(f"{row.iloc[10]} - {row.iloc[14]}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}_c")
                 assigned_staff_c.append(staff_c)
             with col7:
-                staff_d = st.multiselect(f"{row.iloc[10]} - {row.iloc[14]}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}_d")
+                staff_d = st.multiselect(f"{row.iloc[11]} - {row.iloc[15]}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}_d")
                 assigned_staff_d.append(staff_d)
             with col8:
                 staff_all = st.multiselect(f"ALL PART - {row.iloc[-1]}", df_staff_filtered['STAFF NAME'].unique(), key=f"staff_{i}")
@@ -170,6 +180,10 @@ def main():
 
     # Convert the 'ASSIGNED' column to a hashable type (tuple) if it's a list
     df_combine_bom['ASSIGNED'] = df_combine_bom['ASSIGNED'].apply(lambda x: x if isinstance(x, list) else [x])
+    df_combine_bom['ASSIGNED PART A'] = df_combine_bom['ASSIGNED PART A'].apply(lambda x: x if isinstance(x, list) else [x])
+    df_combine_bom['ASSIGNED PART B'] = df_combine_bom['ASSIGNED PART B'].apply(lambda x: x if isinstance(x, list) else [x])
+    df_combine_bom['ASSIGNED PART C'] = df_combine_bom['ASSIGNED PART C'].apply(lambda x: x if isinstance(x, list) else [x])
+    df_combine_bom['ASSIGNED PART D'] = df_combine_bom['ASSIGNED PART D'].apply(lambda x: x if isinstance(x, list) else [x])
 
     # Apply CSS to wrap text in columns
     st.markdown(
@@ -199,8 +213,45 @@ def main():
 
     staff_assignment['TOTAL WORKING (HOURS)'] = 8 * 60
     staff_assignment['REMAINING TIME'] = staff_assignment['TOTAL WORKING (HOURS)'] - staff_assignment[f'TOTAL BOM TIME {selected_department} x QTY']
+    staff_assignment.rename(columns={f'TOTAL BOM TIME {selected_department} x QTY' : 'TOTAL TIME USED'}, inplace=True)
 
-    st.write(staff_assignment)
+    # st.write(staff_assignment)
+
+    def cal_staff_assigned(df, column, num):
+        staff_assignment_part = df.groupby(column).agg({
+            'PI NUMBER' : 'count',
+            'QTY' : 'sum',
+            f'{df.columns[num]}' : 'sum'
+        }).reset_index()
+
+        staff_assignment_part['TOTAL WORKING (HOURS)'] = 7 * 60
+        staff_assignment_part['REMAINING TIME'] = staff_assignment_part['TOTAL WORKING (HOURS)'] - staff_assignment_part[f'{df.columns[num]}']
+        staff_assignment_part.rename(columns={f'{staff_assignment_part.columns[3]}' : 'TOTAL TIME USED'}, inplace=True)
+        staff_assignment_part.rename(columns={f'{staff_assignment_part.columns[0]}' : 'ASSIGNED'}, inplace=True)
+
+        return staff_assignment_part
+
+    cal_part_a = cal_staff_assigned(df_combine_bom.explode('ASSIGNED PART A'), df_combine_bom.explode('ASSIGNED PART A').iloc[:, -6], -12)
+    cal_part_b = cal_staff_assigned(df_combine_bom.explode('ASSIGNED PART B'), df_combine_bom.explode('ASSIGNED PART B').iloc[:, -5], -11)
+    cal_part_c = cal_staff_assigned(df_combine_bom.explode('ASSIGNED PART C'), df_combine_bom.explode('ASSIGNED PART C').iloc[:, -4], -10)
+    cal_part_d = cal_staff_assigned(df_combine_bom.explode('ASSIGNED PART D'), df_combine_bom.explode('ASSIGNED PART D').iloc[:, -3], -9)
+
+    staff_assignment = staff_assignment.append(cal_part_a)
+    staff_assignment = staff_assignment.append(cal_part_b)
+    staff_assignment = staff_assignment.append(cal_part_c)
+    staff_assignment = staff_assignment.append(cal_part_d)
+
+    staff_assignment = staff_assignment.groupby(['ASSIGNED']).agg({
+        'PI NUMBER' : 'sum',
+        'QTY' : 'sum', 
+        'TOTAL TIME USED' : 'sum'
+    }).reset_index()
+
+    staff_assignment['TOTAL WORKING (HOURS)'] = 7 * 60
+    staff_assignment['REMAINING TIME'] = staff_assignment['TOTAL WORKING (HOURS)'] - staff_assignment['TOTAL TIME USED']
+
+    st.dataframe(staff_assignment)
+
 
 if __name__ == "__main__":
     main()
