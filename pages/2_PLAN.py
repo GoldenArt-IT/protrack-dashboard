@@ -71,37 +71,37 @@ def main():
         st.dataframe(df_bom)
     
     if selected_department == 'SPONGE':
-        df_bom = df_bom[['MODEL', 'SPONGE TIME A', 'SPONGE TIME B', 'SPONGE TIME C', 'SPONGE TIME D']]
+        df_bom = df_bom[['MODEL', 'PART SPONGE A', 'PART SPONGE B', 'PART SPONGE C', 'PART SPONGE D', 'SPONGE TIME A', 'SPONGE TIME B', 'SPONGE TIME C', 'SPONGE TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
         st.dataframe(df_bom)
     
     if selected_department == 'SPRAY':
-        df_bom = df_bom[['MODEL', 'SPRAY TIME A', 'SPRAY TIME B', 'SPRAY TIME C', 'SPRAY TIME D']]
+        df_bom = df_bom[['MODEL', 'PART SPRAY A', 'PART SPRAY B', 'PART SPRAY C', 'PART SPRAY D', 'SPRAY TIME A', 'SPRAY TIME A.1', 'SPRAY TIME A.2', 'SPRAY TIME A.3']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
         st.dataframe(df_bom)
 
     if selected_department == 'SEWING':
-        df_bom = df_bom[['MODEL', 'SEW TIME A', 'SEW TIME B', 'SEW TIME C', 'SEW TIME D']]
+        df_bom = df_bom[['MODEL', 'PART SEW A', 'PART SEW B', 'PART SEW C', 'PART SEW D',  'SEW TIME A', 'SEW TIME B', 'SEW TIME C', 'SEW TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
         st.dataframe(df_bom)
 
     if selected_department == 'ASSEMBLY':
-        df_bom = df_bom[['MODEL', 'ASSEMBLY TIME A', 'ASSEMBLY TIME B', 'ASSEMBLY TIME C', 'ASSEMBLY TIME D']]
+        df_bom = df_bom[['MODEL', 'PART ASSEMBLY A', 'PART ASSEMBLY B', 'PART ASSEMBLY C', 'PART ASSEMBLY D', 'ASSEMBLY TIME A', 'ASSEMBLY TIME B', 'ASSEMBLY TIME C', 'ASSEMBLY TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
         st.dataframe(df_bom)
 
     if selected_department == 'PACKING':
-        df_bom = df_bom[['MODEL', 'PACKING TIME A', 'PACKING TIME B', 'PACKING TIME C', 'PACKING TIME D']]
+        df_bom = df_bom[['MODEL', 'PART PACKING A', 'PART PACKING B', 'PART PACKING C', 'PART PACKING D', 'PACKING TIME A', 'PACKING TIME B', 'PACKING TIME C', 'PACKING TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
         st.dataframe(df_bom)
 
     if selected_department == 'INTERIOR':
-        df_bom = df_bom[['MODEL', 'INT/WEL TIME A', 'INT/WEL TIME B', 'INT/WEL TIME C', 'INT/WEL TIME D']]
+        df_bom = df_bom[['MODEL', 'PART INT/WEL A', 'PART INT/WEL B', 'PART INT/WEL C', 'PART INT/WEL D', 'INT/WEL TIME A', 'INT/WEL TIME B', 'INT/WEL TIME C', 'INT/WEL TIME D']]
         df_bom['TOTAL BOM TIME'] = df_bom.iloc[:, -4:].sum(axis=1)
         st.dataframe(df_bom)
 
     elif selected_department == 'FABRIC':
-        df_bom = df_bom[['MODEL', 'FAB TIME A', 'FAB TIME B', 'FAB TIME C', 'FAB TIME D']]
+        df_bom = df_bom[['MODEL', 'PART FAB A', 'PART FAB B', 'PART FAB C', 'PART FAB D', 'FAB TIME A', 'FAB TIME B', 'FAB TIME C', 'FAB TIME D']]
         numeric_columns = ['FAB TIME A', 'FAB TIME B', 'FAB TIME C', 'FAB TIME D']
         for col in numeric_columns:
             df_bom[col] = pd.to_numeric(df_bom[col], errors='coerce')
@@ -122,7 +122,7 @@ def main():
     
     if selected_date != "All":
         # Add assigned staff
-        st.header("Assign staff to each row:")
+        st.header(f"Assign staff - PLAN {selected_date}")
         assigned_staff_a = []
         assigned_staff_b = []
         assigned_staff_c = []
