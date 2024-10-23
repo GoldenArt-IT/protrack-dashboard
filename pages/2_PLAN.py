@@ -4,6 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from st_aggrid import AgGrid, GridOptionsBuilder
 from datetime import timedelta, datetime, time as dtime
+import os
+from datetime import datetime
+import time
 
 
 def main():
@@ -223,8 +226,24 @@ def main():
     df_combine_bom['ASSIGNED'] = assigned_staff_all
     df_combine_bom['QC'] = assigned_qc
 
+    # Function to save DataFrame to Excel
+    def save_to_excel(df, title):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+        filename = f'{title} for {selected_department} - {selected_date} - {timestamp}.xlsx'
+        file_path = os.path.join(desktop_path, filename)
+        df.to_excel(file_path, index=False)
+        message_placeholder = st.empty()
+        message_placeholder.success(f"File saved to: {file_path}")
+        time.sleep(3)
+        message_placeholder.empty()
+
     # Display the updated DataFrame with assigned staff
+    st.header('Staff Assigned Table :')
     st.dataframe(df_combine_bom)
+    if st.button('Save', key='save_button_1'):
+        save_to_excel(df_combine_bom, 'Planned Assigned')
+
 
     # Convert the 'ASSIGNED' column to a hashable type (tuple) if it's a list
     df_combine_bom['ASSIGNED'] = df_combine_bom['ASSIGNED'].apply(
@@ -262,7 +281,7 @@ def main():
     }).reset_index()
 
     # Display the staff assignment summary table
-    st.header("Staff Assignment Summary:")
+    st.header("Staff Assigned Summary :")
 
     staff_assignment['TOTAL WORKING (HOURS)'] = 8 * 60
     staff_assignment['REMAINING TIME'] = staff_assignment['TOTAL WORKING (HOURS)'] - \
@@ -314,6 +333,9 @@ def main():
         'TOTAL WORKING (HOURS)'] - staff_assignment['TOTAL TIME USED']
 
     st.table(staff_assignment)
+    if st.button('Save', key='save_button_2'):
+        save_to_excel(staff_assignment, 'Staff Assigned Summary')
+
 
 
 if __name__ == "__main__":
