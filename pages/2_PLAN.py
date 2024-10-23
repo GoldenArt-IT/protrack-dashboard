@@ -13,7 +13,7 @@ def main():
 
     # Read the Production Progress
     conn1 = st.connection("gsheets", type=GSheetsConnection)
-    df = conn1.read(worksheet="PRODUCTION PROGRESS", ttl=5000)
+    df = conn1.read(worksheet="PRODUCTION PROGRESS", ttl=300)
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     df = df.dropna(how="all", axis=0)
     df = df.drop(columns=['IN', 'FR', 'FB', 'WD', 'SP', 'SR', 'SW', 'AS', 'PC'])
@@ -28,7 +28,7 @@ def main():
 
     # Read Staff Data
     conn3 = st.connection("gsheets", type=GSheetsConnection)
-    df_staff = conn3.read(worksheet="STAFF DATA", ttl=5000)
+    df_staff = conn3.read(worksheet="STAFF DATA", ttl=300)
     df_staff = df_staff.dropna(how="all", axis=0)
 
     # Function to handle DataFrame display logic
@@ -247,7 +247,7 @@ def main():
         'TOTAL TIME USED' : 'sum'
     }).reset_index()
 
-    staff_assignment['TOTAL WORKING (HOURS)'] = 522
+    staff_assignment['TOTAL WORKING (HOURS)'] = 7 * 60
     staff_assignment['REMAINING TIME'] = staff_assignment['TOTAL WORKING (HOURS)'] - staff_assignment['TOTAL TIME USED']
 
     st.dataframe(staff_assignment)
