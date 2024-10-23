@@ -247,7 +247,11 @@ def main():
         'TOTAL TIME USED' : 'sum'
     }).reset_index()
 
+<<<<<<< HEAD
     staff_assignment['TOTAL WORKING (HOURS)'] = 7 * 60
+=======
+    staff_assignment['TOTAL WORKING (HOURS)'] = 522
+>>>>>>> parent of 05d740c (Merge pull request #2 from sharulshafie/main)
     staff_assignment['REMAINING TIME'] = staff_assignment['TOTAL WORKING (HOURS)'] - staff_assignment['TOTAL TIME USED']
 
     st.dataframe(staff_assignment)
