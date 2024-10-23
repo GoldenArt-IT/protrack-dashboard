@@ -229,7 +229,7 @@ def main():
     # Function to save DataFrame to Excel
     def save_to_excel(df, title):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop/PROTRACK-DATA')
+        desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\PROTRACK-DATA')
         filename = f'{title} for {selected_department} - {selected_date} - {timestamp}.xlsx'
         file_path = os.path.join(desktop_path, filename)
         df.to_excel(file_path, index=False)
