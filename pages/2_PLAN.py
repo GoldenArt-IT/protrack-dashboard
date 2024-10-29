@@ -240,6 +240,8 @@ def main():
 
     # Display the updated DataFrame with assigned staff
     st.header('Staff Assigned Table :')
+    df_combine_bom = df_combine_bom.drop(columns=['DELIVERY PLAN DATE'])
+    df_combine_bom = df_combine_bom.rename(columns={'DECOY DATE' : 'PLAN DATE'})
     st.dataframe(df_combine_bom)
     if st.button('Save', key='save_button_1'):
         save_to_excel(df_combine_bom, 'Planned Assigned')

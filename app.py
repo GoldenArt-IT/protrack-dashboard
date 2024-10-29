@@ -16,6 +16,8 @@ def main():
     df = conn1.read(worksheet="PRODUCTION PROGRESS", ttl=300)
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     df = df.dropna(how="all", axis=0)
+    df = df.drop(columns=['DELIVERY PLAN DATE'])
+    df = df.rename(columns={'DECOY DATE' : 'PLAN DATE'})
 
     # Read the Sewing Logs
     conn2 = st.connection("gsheets", type=GSheetsConnection)
