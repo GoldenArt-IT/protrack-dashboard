@@ -7,6 +7,7 @@ from datetime import timedelta, datetime, time as dtime
 import os
 from datetime import datetime
 import time
+from io import BytesIO
 
 
 def main():
@@ -228,15 +229,36 @@ def main():
 
     # Function to save DataFrame to Excel
     def save_to_excel(df, title):
+        # Generate filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\PROTRACK-DATA')
         filename = f'{title} for {selected_department} - {selected_date} - {timestamp}.xlsx'
+
+        # Define the local save path
+        desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\PROTRACK-DATA')
+        if not os.path.exists(desktop_path):
+            os.makedirs(desktop_path)  # Create directory if it doesn't exist
+
+        # Save DataFrame to an Excel file on the local server
         file_path = os.path.join(desktop_path, filename)
         df.to_excel(file_path, index=False)
+
+        # Notify user of local save
         message_placeholder = st.empty()
         message_placeholder.success(f"File saved to: {file_path}")
-        time.sleep(3)
-        message_placeholder.empty()
+        # time.sleep(3)
+        # message_placeholder.empty()
+
+        # Save DataFrame to an in-memory buffer for download in Streamlit
+        buffer = BytesIO()
+        df.to_excel(buffer, index=False)
+        buffer.seek(0)  # Reset buffer position to start
+
+        st.download_button(
+            label="Save to Device",
+            data=buffer,
+            file_name=filename,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
     # Display the updated DataFrame with assigned staff
     st.header('Staff Assigned Table :')
