@@ -260,6 +260,7 @@ def main():
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
+
     # Display the updated DataFrame with assigned staff
     st.header('Staff Assigned Table :')
     df_combine_bom = df_combine_bom.drop(columns=['DELIVERY PLAN DATE'])
@@ -281,17 +282,6 @@ def main():
     df_combine_bom['ASSIGNED PART D'] = df_combine_bom['ASSIGNED PART D'].apply(
         lambda x: x if isinstance(x, list) else [x])
 
-    # Apply CSS to wrap text in columns
-    st.markdown(
-        """
-        <style>
-        .dataframe td {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        </style>
-        """, unsafe_allow_html=True
-    )
 
     # Converts each element of the specified column(s) into a row
     # example : [PI-2024, [TEAK, WHITE]] = [[PI-2024, TEAK], [PI-2024, WHITE]]
@@ -360,7 +350,19 @@ def main():
     if st.button('Save', key='save_button_2'):
         save_to_excel(staff_assignment, 'Staff Assigned Summary')
 
-
+    # Apply CSS to wrap text in columns
+    st.markdown(
+        """
+        <style>
+        .dataframe tbody tr td {
+            white-space: normal;
+            word-wrap: break-word;
+            text-overflow: ellipsis;
+            max-width: 100px;
+        }
+        </style>
+        """, unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
